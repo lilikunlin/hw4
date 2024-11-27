@@ -2,9 +2,10 @@
 #include <vector>
 #include <queue>
 #include <iomanip>
+#include <cmath>
 using namespace std;
 
-// 定義 BST 節點結構 
+// 定義 BST 節點結構
 struct BSTNode {
     int val;
     BSTNode* left;
@@ -50,12 +51,26 @@ void inorderTraversal(BSTNode* root, vector<int>& result) {
     inorderTraversal(root->right, result);
 }
 
-// 打印樹狀圖 (BST 和 Max-Heap 共用)
-void printTree(vector<int>& arr, int index, int indent = 0) {
-    if (index >= arr.size()) return;
-    printTree(arr, 2 * index + 2, indent + 4);
-    cout << setw(indent) << arr[index] << endl;
-    printTree(arr, 2 * index + 1, indent + 4);
+// 打印樹狀圖 (針對完全二元樹結構)
+void printTree(const vector<int>& arr) {
+    if (arr.empty()) return;
+
+    int n = arr.size();
+    int levels = log2(n) + 1; // 計算樹的總層數
+
+    for (int level = 0, idx = 0; level < levels; ++level) {
+        int nodesInLevel = pow(2, level); // 該層的節點數
+        int indent = pow(2, levels - level) - 1; // 首行縮排數
+        int space = pow(2, levels - level + 1) - 1; // 節點之間的間隔
+
+        cout << string(indent, ' '); // 首行縮排
+        for (int j = 0; j < nodesInLevel && idx < n; ++j, ++idx) {
+            cout << setw(2) << arr[idx];
+            if (j < nodesInLevel - 1) // 節點間距
+                cout << string(space, ' ');
+        }
+        cout << endl; // 換行
+    }
 }
 
 int main() {
@@ -90,13 +105,13 @@ int main() {
         cout << val << " ";
     }
     cout << "\nBST 的樹狀圖表示：" << endl;
-    printTree(bstInorder, 0);
+    printTree(bstInorder);
 
     // 輸出 Max-Heap 結果
     cout << "\nMax-Heap (陣列): ";
     maxHeap.printArray();
     cout << "Max-Heap 的樹狀圖表示：" << endl;
-    printTree(maxHeap.heap, 0);
+    printTree(maxHeap.heap);
 
     return 0;
 }
