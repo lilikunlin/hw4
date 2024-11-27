@@ -1,117 +1,107 @@
 ﻿#include <iostream>
 #include <vector>
 #include <queue>
-#include <iomanip>
-#include <cmath>
+#include <algorithm>
 using namespace std;
 
-// 定義 BST 節點結構
-struct BSTNode {
+// 定義二元樹的節點結構
+struct TreeNode {
     int val;
-    BSTNode* left;
-    BSTNode* right;
-    BSTNode(int v) : val(v), left(nullptr), right(nullptr) {}
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
 };
 
-// 定義 Max-Heap 的類別
-class MaxHeap {
-public:
-    vector<int> heap;
-    void insert(int val) {
-        heap.push_back(val);
-        int i = heap.size() - 1;
-        while (i > 0 && heap[(i - 1) / 2] < heap[i]) {
-            swap(heap[(i - 1) / 2], heap[i]);
-            i = (i - 1) / 2;
-        }
-    }
-    void printArray() {
-        for (int i : heap) {
-            cout << i << " ";
-        }
-        cout << endl;
-    }
-};
-
-// 插入節點到 BST
-BSTNode* insertBST(BSTNode* root, int val) {
-    if (!root) return new BSTNode(val);
-    if (val < root->val)
-        root->left = insertBST(root->left, val);
-    else
-        root->right = insertBST(root->right, val);
+// 插入節點到二元搜尋樹
+TreeNode* insertBST(TreeNode* root, int val) {
+    if (root == nullptr) return new TreeNode(val);
+    if (val < root->val) root->left = insertBST(root->left, val);
+    else root->right = insertBST(root->right, val);
     return root;
 }
 
-// 中序遍歷 BST 並存入陣列
-void inorderTraversal(BSTNode* root, vector<int>& result) {
-    if (!root) return;
+// 中序遍歷二元搜尋樹
+void inorderTraversal(TreeNode* root, vector<int>& result) {
+    if (root == nullptr) return;
     inorderTraversal(root->left, result);
     result.push_back(root->val);
     inorderTraversal(root->right, result);
 }
 
-// 打印樹狀圖 (針對完全二元樹結構)
-void printTree(const vector<int>& arr) {
-    if (arr.empty()) return;
+// 打印二元搜尋樹
+void printBST(TreeNode* root, int space = 0, int height = 10) {
+    if (root == nullptr) return;
+    space += height;
+    printBST(root->right, space);
+    cout << endl;
+    for (int i = height; i < space; i++) cout << ' ';
+    cout << root->val << "\n";
+    printBST(root->left, space);
+}
 
-    int n = arr.size();
-    int levels = log2(n) + 1; // 計算樹的總層數
+// 建立最大堆
+void buildMaxHeap(vector<int>& heap) {
+    make_heap(heap.begin(), heap.end());
+}
 
-    for (int level = 0, idx = 0; level < levels; ++level) {
-        int nodesInLevel = pow(2, level); // 該層的節點數
-        int indent = pow(2, levels - level) - 1; // 首行縮排數
-        int space = pow(2, levels - level + 1) - 1; // 節點之間的間隔
-
-        cout << string(indent, ' '); // 首行縮排
-        for (int j = 0; j < nodesInLevel && idx < n; ++j, ++idx) {
-            cout << setw(2) << arr[idx];
-            if (j < nodesInLevel - 1) // 節點間距
-                cout << string(space, ' ');
-        }
-        cout << endl; // 換行
+// 打印最大堆
+void printHeap(const vector<int>& heap) {
+    int n = heap.size();
+    for (int i = 0; i < n; ++i) {
+        cout << heap[i] << " ";
     }
+    cout << endl;
+}
+
+// 打印最大堆的樹狀圖
+void printHeapTree(const vector<int>& heap, int i = 0, int space = 0, int height = 10) {
+    if (i >= heap.size()) return;
+    space += height;
+    if (2 * i + 2 < heap.size()) printHeapTree(heap, 2 * i + 2, space);
+    cout << endl;
+    for (int j = height; j < space; j++) cout << ' ';
+    cout << heap[i] << "\n";
+    if (2 * i + 1 < heap.size()) printHeapTree(heap, 2 * i + 1, space);
 }
 
 int main() {
-    vector<int> input;
-    int num;
+    vector<int> values;
+    int val;
+    cout << "請輸入整數值（輸入非數字結束輸入）：" << endl;
+    while (cin >> val) {
+        values.push_back(val);
+    }
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-    // 輸入數值
-    cout << "請輸入整數（以 -1 結束輸入）：";
-    while (cin >> num && num != -1) {
-        input.push_back(num);
+    // 建立二元搜尋樹
+    TreeNode* bstRoot = nullptr;
+    for (int v : values) {
+        bstRoot = insertBST(bstRoot, v);
     }
 
-    // 建立 BST
-    BSTNode* bstRoot = nullptr;
-    for (int val : input) {
-        bstRoot = insertBST(bstRoot, val);
-    }
-
-    // 中序遍歷 BST
+    // 中序遍歷並打印二元搜尋樹
     vector<int> bstInorder;
     inorderTraversal(bstRoot, bstInorder);
-
-    // 建立 Max-Heap
-    MaxHeap maxHeap;
-    for (int val : input) {
-        maxHeap.insert(val);
+    cout << "二元搜尋樹的中序遍歷結果：" << endl;
+    for (int v : bstInorder) {
+        cout << v << " ";
     }
+    cout << endl;
 
-    // 輸出 BST 結果
-    cout << "\nBinary Search Tree (中序遍歷): ";
-    for (int val : bstInorder) {
-        cout << val << " ";
-    }
-    cout << "\nBST 的樹狀圖表示：" << endl;
-    printTree(bstInorder);
+    cout << "二元搜尋樹的樹狀圖：" << endl;
+    printBST(bstRoot);
 
-    // 輸出 Max-Heap 結果
-    cout << "\nMax-Heap (陣列): ";
-    maxHeap.printArray();
-    cout << "Max-Heap 的樹狀圖表示：" << endl;
-    printTree(maxHeap.heap);
+    // 建立最大堆
+    vector<int> maxHeap = values;
+    buildMaxHeap(maxHeap);
+
+    // 打印最大堆
+    cout << "最大堆的陣列表示：" << endl;
+    printHeap(maxHeap);
+
+    cout << "最大堆的樹狀圖：" << endl;
+    printHeapTree(maxHeap);
 
     return 0;
 }
