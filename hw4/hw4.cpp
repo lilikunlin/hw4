@@ -2,6 +2,7 @@
 #include <vector>
 #include <queue>
 #include <algorithm>
+#include <iomanip>
 using namespace std;
 
 // 定義二元樹的節點結構
@@ -20,6 +21,12 @@ TreeNode* insertBST(TreeNode* root, int val) {
     return root;
 }
 
+// 計算樹的高度
+int getHeight(TreeNode* root) {
+    if (root == nullptr) return 0;
+    return max(getHeight(root->left), getHeight(root->right)) + 1;
+}
+
 // 中序遍歷二元搜尋樹
 void inorderTraversal(TreeNode* root, vector<int>& result) {
     if (root == nullptr) return;
@@ -29,14 +36,40 @@ void inorderTraversal(TreeNode* root, vector<int>& result) {
 }
 
 // 打印二元搜尋樹
-void printBST(TreeNode* root, int space = 0, int height = 10) {
+void printBST(TreeNode* root) {
     if (root == nullptr) return;
-    space += height;
-    printBST(root->right, space);
-    cout << endl;
-    for (int i = height; i < space; i++) cout << ' ';
-    cout << root->val << "\n";
-    printBST(root->left, space);
+    int height = getHeight(root);
+    int maxNodes = (1 << height) - 1; // 2^height - 1
+    queue<TreeNode*> q;
+    q.push(root);
+    for (int level = 0; level < height; ++level) {
+        int levelNodes = 1 << level; // 2^level
+        int space = (maxNodes / levelNodes) - 1;
+        for (int i = 0; i < levelNodes; ++i) {
+            if (i > 0) cout << setw(space) << " ";
+            TreeNode* node = q.front();
+            q.pop();
+            if (node) {
+                cout << setw(2) << node->val;
+                q.push(node->left);
+                q.push(node->right);
+            }
+            else {
+                cout << setw(2) << " ";
+                q.push(nullptr);
+                q.push(nullptr);
+            }
+        }
+        cout << endl;
+        if (level < height - 1) {
+            for (int i = 0; i < levelNodes; ++i) {
+                if (i > 0) cout << setw(space) << " ";
+                cout << setw(2) << "/";
+                cout << setw(2) << "\\";
+            }
+            cout << endl;
+        }
+    }
 }
 
 // 建立最大堆
@@ -54,14 +87,29 @@ void printHeap(const vector<int>& heap) {
 }
 
 // 打印最大堆的樹狀圖
-void printHeapTree(const vector<int>& heap, int i = 0, int space = 0, int height = 10) {
-    if (i >= heap.size()) return;
-    space += height;
-    if (2 * i + 2 < heap.size()) printHeapTree(heap, 2 * i + 2, space);
-    cout << endl;
-    for (int j = height; j < space; j++) cout << ' ';
-    cout << heap[i] << "\n";
-    if (2 * i + 1 < heap.size()) printHeapTree(heap, 2 * i + 1, space);
+void printHeapTree(const vector<int>& heap) {
+    int n = heap.size();
+    int height = 0;
+    while ((1 << height) - 1 < n) height++;
+    int maxNodes = (1 << height) - 1; // 2^height - 1
+    int i = 0;
+    for (int level = 0; level < height; ++level) {
+        int levelNodes = 1 << level; // 2^level
+        int space = (maxNodes / levelNodes) - 1;
+        for (int j = 0; j < levelNodes && i < n; ++j) {
+            if (j > 0) cout << setw(space) << " ";
+            cout << setw(2) << heap[i++];
+        }
+        cout << endl;
+        if (level < height - 1) {
+            for (int j = 0; j < levelNodes; ++j) {
+                if (j > 0) cout << setw(space) << " ";
+                cout << setw(2) << "/";
+                cout << setw(2) << "\\";
+            }
+            cout << endl;
+        }
+    }
 }
 
 int main() {
